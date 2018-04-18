@@ -1,0 +1,306 @@
+/*
+ *
+ This program converts matrices into
+ sparse matrices, then adds and multiplies
+ the matrices. The sparse matrix implements  
+ the Sparse Interface, which tests the sparse
+ matrix code. The interface was provided by
+ my course's instructor.
+ *
+ */
+
+
+import java.util.HashMap;
+
+
+public class SparseMatrix implements SparseInterface {
+	
+	/*Data Field*/
+	private int rows;
+	private int cols;
+	
+	private HashMap<String, Integer> matMap = new HashMap<String, Integer>();
+	
+	/*Default Constructor*/
+	public SparseMatrix(){
+		this.rows = 0;
+		this.cols = 0;
+	}
+	
+	/*Constructor*/
+	public SparseMatrix(int rows, int cols){
+		this.rows = rows;
+		this.cols = cols;
+	}
+	
+	
+    /*Main*/
+	public static void main(String[] args){
+	
+		SparseInterface myTest = new SparseMatrix();
+		
+		myTest.setSize(3, 3);
+		
+		System.out.println("Num Rows is 3: " + (myTest.getNumRows() == 3));
+		System.out.println("Num Cols is 3: " + (myTest.getNumCols() == 3));
+		
+		myTest.addElement(0, 0, 16);
+		myTest.addElement(0, 1, 4);myTest.removeElement(0,1);
+		String correctString = "0 0 16\n";
+		System.out.println("toString is correct: " + correctString.equals(myTest.toString()));
+		
+		myTest.removeElement(0,0);
+		myTest.addElement(2,2,4);
+		myTest.addElement(1,0,-3);
+		correctString = "1 0 -3\n2 2 4\n";
+		System.out.println("toString is correct: " + correctString.equals(myTest.toString()));
+		
+		myTest.removeElement(2, 2);
+		myTest.removeElement(1, 0);
+		myTest.addElement(0, 0, 0);
+		correctString = "";//Because we are not storing 0 values in the matrix the toString should reflect an "empty" (all 0) matrix.
+		System.out.println("toString is correct: " + correctString.equals(myTest.toString()));
+		
+		myTest.addElement(0, 1, 3);
+		myTest.addElement(0, 1, 0);
+		correctString = "";//Note that adding 0 to the matrix overwrites the data at that position to 0 as defined in the interface description//Because we are not storing 0 values, we can remove the element at that position.
+		System.out.println("toString is correct: " + correctString.equals(myTest.toString()));
+		
+		myTest.addElement(0, 0, 16);
+		myTest.addElement(0, 1, 4);
+		myTest.addElement(1, 1, 9);
+		myTest.addElement(2, 2, 7);
+		
+		SparseInterface addTest1 = new SparseMatrix();
+		addTest1.setSize(3, 3);
+		addTest1.addElement(0, 0, 1);
+		addTest1.addElement(1, 1, 2);
+		addTest1.addElement(2, 2, 3);
+		
+		SparseInterface addTest2 = new SparseMatrix();
+		addTest2.setSize(3, 3);
+		addTest2.addElement(0, 0, 3);
+		addTest2.addElement(0, 0, 2);
+		addTest2.addElement(0, 0, 1);
+		
+		SparseInterface addTest3 = addTest1.addMatrices(addTest2);
+		System.out.println("added matrix: "+addTest3.toString());
+		
+		SparseInterface multiplyTest1 = new SparseMatrix();
+		multiplyTest1.setSize(3, 3);
+		multiplyTest1.addElement(0, 0, 1);
+		multiplyTest1.addElement(0, 1, 1);
+		multiplyTest1.addElement(0, 2, 1);
+		
+		SparseInterface multiplyTest2 = new SparseMatrix();
+		multiplyTest2.setSize(3, 3);
+		multiplyTest2.addElement(0, 0, 1);
+		multiplyTest2.addElement(1, 0, 1);
+		multiplyTest2.addElement(2, 0, 1);
+		multiplyTest2.addElement(0, 1, 2);
+		multiplyTest2.addElement(1, 1, 1);
+		multiplyTest2.addElement(2, 1, 1);
+		multiplyTest2.addElement(0, 2, 3);
+		multiplyTest2.addElement(1, 2, 1);
+		multiplyTest2.addElement(2, 2, 1);
+		
+		SparseInterface multiplyTest3 = multiplyTest1.multiplyMatrices(multiplyTest2);
+		
+		System.out.println("multiplied matrix: "+multiplyTest3.toString());
+		
+		SparseInterface test1 = new SparseMatrix();
+		test1.setSize(3, 4);
+		
+		SparseInterface test2 = new SparseMatrix();
+		test2.setSize(4, 5); 
+		
+		SparseInterface test3 = test1.addMatrices(test2);  //should return null
+		
+		SparseInterface test4 = test1.multiplyMatrices(test2); //should work
+		
+		SparseInterface test5 = test2.multiplyMatrices(test1); //should return null
+		
+	}//END MAIN
+	
+	/*Clears the matrix*/
+	public void clear(){
+		matMap.clear();
+	}
+	
+	/*Sets size of the matrix*/
+	public void setSize(int rows, int cols){
+		this.rows = rows;
+		this.cols = cols;
+	}
+	
+	/*Returns # of rows in the matrix*/
+	public int getNumRows(){
+		return rows;
+	}
+	
+	/*Returns # of columns in the matrix*/
+	public int getNumCols(){
+		return cols;
+	}
+	
+	/*Insert matrices' elements into HashMable*/
+	public void addElement(int row, int col, int data){
+		
+		/*Throws an exception if out of bounds*/
+		if(row >= rows || col >= cols){
+			throw new IllegalArgumentException("Invalid index");
+		}
+		
+		String key = getKey(row, col);
+		matMap.put(key, data);
+		
+	}
+	
+	/*Remove element from matrix*/
+	public void removeElement(int row, int col){
+		
+		String key = getKey(row, col); //Get key for element at some specified row/column
+		matMap.remove(key); //Remove data from HashMap with its key
+	
+	}
+	
+	/*Returns element for specified row and column of the matrix*/
+	public int getElement(int row, int col){
+		
+		int returnData = matHashElements(row, col);
+		return returnData;
+		
+	}
+	
+	/*Convert from matrix to sparse matrix, as a string */
+	public String toString(){ 
+		
+	  StringBuilder buildSparse = new StringBuilder(); //New String Builder Object
+	  
+	  for (int i = 0; i < rows; i++) { 
+		  for (int j = 0; j < cols; j++) { 
+		   
+			  
+		   if(matHashElements(i, j) != 0){ //Sparse Matrix is only concerned with non-zero elements
+			    buildSparse.append(i + " " + j + " ");
+				buildSparse.append(matHashElements(i, j) + "\n");
+		   }
+		   
+		  } 
+	  } 
+	  
+	  return buildSparse.toString(); 
+	 
+	} 
+	
+	/*Add matrices*/
+	 public SparseMatrix addMatrices(SparseInterface matrixToAdd){ 
+		  
+		 SparseMatrix matAddend = this; 
+		  
+		 SparseMatrix matSum = new SparseMatrix(rows,cols);
+		 
+		  /*Only matrices of the same size can be added*/
+		  if(matAddend.getNumRows() != matrixToAdd.getNumRows() || matAddend.getNumCols() != matrixToAdd.getNumCols()){
+			  matSum = null;
+		  }
+		  
+		  /*Go through all elements in the matrices and add*/
+		  for (int i = 0; i < matAddend.rows; i++) { 
+			  for (int j = 0; j < matAddend.cols; j++) { 
+		
+				  matSum.elementAdd(i,j,matAddend.getElement(i,j)); 
+				  matSum.elementAdd(i,j,matrixToAdd.getElement(i,j)); 
+				   
+			  } 
+		  } 
+		   
+		  return matSum; 
+		 
+	 } 
+	 
+	 /*Multiply matrices*/
+	 public SparseMatrix multiplyMatrices(SparseInterface matrixToMultiply){ 
+		  
+		 SparseMatrix matMultiplicand = this; 
+		   
+		  SparseMatrix matProduct = new SparseMatrix(matMultiplicand.getNumRows(), matrixToMultiply.getNumCols()); 
+		  
+		  /*# of columns in one matrix must equal # rows of other matrix to multiply them*/
+		  if(matMultiplicand.getNumCols() != matrixToMultiply.getNumRows()){
+			  matProduct = null;
+		  }
+		  
+		  /*Go through elements of each matrix to multiply them*/
+		  for (int i = 0; i < matMultiplicand.rows; i++) { 
+			  for (int j = 0; j < matrixToMultiply.getNumCols(); j++) { 
+				  	for (int k = 0; k < matMultiplicand.cols; k++) { 
+				  		
+				  		matProduct.elementAdd(i, j, matMultiplicand.matHashElements(i,k) * matrixToMultiply.getElement(k,j)); //Matrix Multiplication Algorithm
+				  		
+				  	} 
+			  } 
+		  } 
+		   
+		  return matProduct; 
+		  
+		} 
+	
+	/*Get a key for specified row/column*/ 
+	private String getKey(int row, int col){
+	
+	StringBuilder keyBuilder = new StringBuilder(); //New String Builder Object
+	keyBuilder.append(row).append(",").append(col); //Take row & column and append into a single string
+	
+	return keyBuilder.toString(); //The key is of the form: "row, column" for easy access to elements!
+	
+	}
+	
+	/*Returns element in the Hash Table*/
+	public Integer matHashElements(int row, int col){
+	
+		/*Throws an exception if out of bounds*/
+		if(row >= rows || col >= cols){	
+			throw new IllegalArgumentException("Invalid index");
+		}
+		
+		String key = getKey(row, col); //Get key for element at some specified row/column
+		Integer data = matMap.get(key); //Use key to access data from the HashMap
+		
+		if(data == null) { 		
+			data = 0;
+		}
+		
+			return data;
+			
+	}
+	
+	/*Store data into Hash Map*/
+	public void put(int row, int col, int data){
+		
+		/*Throws an exception if out of bounds*/
+		if(row >= rows || col >= cols){
+			throw new IllegalArgumentException("Invalid index");
+		}
+		
+		String key = getKey(row, col); //Get key for element at some specified row/column
+		matMap.put(key, data); //Put data into HashMap with its key
+		
+	}
+	
+	/*Used to add elements of two different matrices at the same row/column*/
+	public void elementAdd(int row, int col, int elAddend){ //elAddend is 1 of the elements that will be added
+		
+		/*Throws an exception if out of bounds*/
+		if(row >= rows || col >= cols){
+			throw new IllegalArgumentException("invalid");
+		}
+		
+		Integer elSum = matHashElements(row, col); 
+		elSum += elAddend; //elSum = elSum + elAddend 
+		put(row, col, elSum); //Store elSum into specified row/column, elements have been added
+		
+	}
+	
+	
+}
